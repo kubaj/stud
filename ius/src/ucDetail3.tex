@@ -1,0 +1,45 @@
+\begin{center}
+\centering
+\begin{tabularx}{\textwidth}{| X |}
+  \hline
+  \textbf{Identifikátor:} UC03\\
+  \hline
+  \textbf{Názov:} Pridať využitú službu\\
+  \hline
+  \textbf{Popis:} Recepčná \textbf{R} zaznamená do systému, že \textbf{K} využil službu v hoteli. \\
+  \hline
+  \textbf{Priorita:} 3 \\
+  \hline
+  \textbf{Frekvencia} Niekoľkokrát denne \\
+  \hline
+  \textbf{Vstupné podmienky:} \\
+  \begin{compactenum}
+  	\item Recepčná \textbf{R} je prihlásená do systému.
+  \end{compactenum}\\
+  \hline
+  \textbf{Výstupné podmienky} V systéme je zaznamenané, že klient \textbf{K} využil službu v hoteli. \\
+  \hline
+  \textbf{Užívatelia:} Recepčná hotela \textbf{R}\\ %Klient \textbf{K}, , Vedúci hotela \textbf{V} \\
+  \hline
+  \textbf{Základná postupnosť:} \\
+  \begin{compactenum}
+    \item Prípad užitia začína tým, že \textbf{R} vyberie zo zoznamu akú službu \textbf{K} využil.
+    \item \textbf{R} vyhľadá izbu podľa prípadu užitia \textbf{UC06}. 
+    \item Ďalej systém nájde na základe nájdenej izby pobyt podľa prípadu užitia \textbf{UC07}.
+    \item Systém zobrazí meno \textbf{K} ktorý využíva pobyt:
+      \begin{compactenum}
+      \item Ak meno, ktoré \textbf{K} nahlásil sa nezhoduje s menom v systéme, tak \textbf{R} túto skutočnosť \textbf{K} 
+        oznámi a prípad užitia buď končí, alebo sa vracia na krok 1.
+      \item Ak nahlásené meno sa zhoduje s menom \textbf{K} v systéme, tak prípad užitia pokračuje nasledujúcim krokom.
+      \end{compactenum}
+    \item \textbf{R} potvrdí vybrané služby.   
+    \item Systém priradí využité služby zvolenej izbe a započíta cenu služieb k cene pobytu.
+  \end{compactenum}\\
+  \hline
+  \textbf{Alternatívna postupnosť:} \\
+  \begin{compactenum}
+    \item[1.-5.] \textbf{R} môže ukončiť proces pridania využitej služby.
+  \end{compactenum}\\
+  \hline
+\end{tabularx}
+\end{center}

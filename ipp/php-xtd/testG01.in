@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<root>
+	<a> 
+		<b/>		
+		<b/>		
+		<c>	
+			<d/>
+			<e/>
+			<f/>
+		</c>
+		
+	</a>
+	<a>
+		<b>
+			<x/>
+			<y/>
+			<z/>
+		</b>
+	</a>	
+</root>

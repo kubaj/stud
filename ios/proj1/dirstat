@@ -1,0 +1,118 @@
+#!/bin/sh
+
+alias robNieco="tee"
+
+case $(uname -s) in
+    Linux*) fSTAT="-c "%s"" ;;
+    *) fSTAT="-f "%z"" ;;
+esac
+
+while [ "$#" -gt 1 ]
+do
+    key="$1"
+
+    case $key in
+        -i)
+            shift
+            newRegex=$(echo $1 | sed 's/^\^/\//g' | sed 's/^/\.\*/g' | sed 's/\$$/\//g' | sed 's/$/\.\*/g')
+            alias robNieco="grep -E -v -a \"$newRegex\""
+            ;;
+        *)
+            INVALID=$2
+            ;;
+    esac
+    shift
+done
+
+DIRECTORY=$1
+if [ -n "$DIRECTORY" ]; then
+    cd "$DIRECTORY" 2>/dev/null 
+    if [ "$?" -ne "0" ]; then
+        echo "No such file or directory"
+        exit 1
+    fi
+    echo "Root directory: $DIRECTORY"
+else
+    echo "Root directory: $(pwd)"
+fi
+
+ND=$(find . -type d 2>/dev/null)
+if [ "$?" -ne "0" ]; then
+    >&2 echo "Error at find"
+    exit 1
+fi
+ND=$(echo "$ND" | sed 's/$/\//g' | robNieco | wc -l | sed 's/^ *//')
+echo "Directories: $ND"
+
+DD=$(find . -type d 2>/dev/null)
+if [ "$?" -ne "0" ]; then
+    >&2 echo "Error at find"
+    exit 1
+fi
+DD=$(echo "$DD" | sed 's/$/\//g' | robNieco | while read line; do echo "$line" | tr -cd [/] | wc -c; done | sort -n | tail -1 | sed 's/^ *//')
+echo "Max depth: $(($DD - 1))"
+
+AF=0
+ASDF=$(find . -type d 2>/dev/null)
+if [ "$?" -ne "0" ]; then
+    >&2 echo "Error at find"
+    exit 1
+fi
+echo "$ASDF" | sed 's/$/\//g' | robNieco | (while read dir; do
+    AF=$((AF+$(find "$dir" -maxdepth 1 -type f 2>/dev/null | sed 's/$/\//g' | robNieco | wc -l)))
+done
+AF=$((AF/ND))
+echo "Average no. of files: $AF")
+
+NF=$(find . -type f 2>/dev/null)
+NF=$(echo "$NF" | sed 's/$/\//g' | robNieco | wc -l | sed 's/^ *//')
+echo "All files: $NF"
+
+FILES=$(find . -type f -print 2>/dev/null)
+if [ "$?" -ne "0" ]; then
+    >&2 echo "Error at find"
+    exit 1
+fi
+FILES=$(echo "$FILES" | sed 's/$/\//g' | robNieco | sed 's/\/$//g')
+
+if [ "$NF" -eq "0" ]; then
+    LF="N/A"
+    TS="N/A"
+    MS="N/A"
+else
+    FSIZE=$(echo "$FILES" | tr '\n' '\0' | xargs -0 stat $fSTAT)
+    if [ "$?" -ne "0" ]; then
+        >&2 echo "Error at stat"
+        exit 1
+    fi
+    LF=$(echo "$FSIZE" | sort -n | tail -1)
+    TS=$(echo "$FSIZE" | awk '{ABC+=$1} END {print ABC}')
+    TS=$((TS/NF))
+    MS=$(echo "$FSIZE" | sort -n | awk '{count[NR]=$1} END {if(NR%2) { print count[(NR + 1) / 2];} else { printf "%d\n",(count[(NR / 2)] + count[(NR / 2) + 1]) / 2; } }')
+fi
+
+echo "  Largest file: $LF"
+echo "  Average file size: $TS"
+echo "  File size median: $MS"
+
+EL=$(echo "$FILES" | grep -E ".*[^/.]\.+[[:alnum:]]+$" | awk -F. '{print $NF}' | sort -u | paste -sd "," -)
+echo "File extensions: $EL"
+
+echo "$FILES" | grep -E ".*[^/.]\.+[[:alnum:]]+$" | awk -F. '{print $NF}' | sort -u | while read EXT; do
+    EXTFILES=$(echo "$FILES" | grep -E ".*[^/.]\.+$EXT\$")
+    EXTFSIZE=$(echo "$EXTFILES" | tr '\n' '\0' | xargs -0 stat $fSTAT)
+    if [ "$?" -ne "0" ]; then
+        >&2 echo "Error at stat"
+        exit 1
+    fi
+    NEXT=$(echo "$EXTFILES" | wc -l | sed 's/^ *//')
+
+    LEXT=$(echo  "$EXTFSIZE" | sort -n | tail -1 | sed 's/^ *//')
+    TSEXT=$(echo "$EXTFSIZE" | awk '{ABC+=$1} END {print ABC}')
+    MEXT=$(echo  "$EXTFSIZE" | sort -n | awk '{count[NR] = $1} END {if(NR % 2) {print count[(NR + 1) / 2];} else {printf "%d\n",(count[(NR / 2)] + count[(NR / 2) + 1]) / 2;} }')
+
+    echo "Files .$EXT: $NEXT"
+    echo "  Largest file .$EXT: $LEXT"
+    echo "  Average file size .$EXT: $((TSEXT/NEXT))"
+    echo "  File size median .$EXT: $MEXT"
+done

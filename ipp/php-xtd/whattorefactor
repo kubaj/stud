@@ -1,0 +1,4 @@
+function generate_attributes_output($relations, $parameters, $key, $values)
+function generate_table_members_output($relations, $parameters, $key, $values)
+
+function relationships_table($tables, $relations, $parameters)

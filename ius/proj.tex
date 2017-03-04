@@ -1,0 +1,31 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage[slovak]{babel}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[pdftex]{graphicx}
+\usepackage{tabularx}
+\usepackage{paralist}
+\usepackage[margin=20mm]{geometry}
+
+\begin{document}
+\input{src/titulka.tex}
+\section*{Zadanie}
+Navrhněte IS hotelu, který by poskytoval přehled o dostupnosti pokojů, údaje o hostech, jejich pobytech v hotelu, požadavcích na služby, platby za pokoje, atd. Zákazníci mohou provádět rezervace pokojů (tím pádem musí zadat své osobní údaje). Klient si může v rámci jedné rezervace objednat více pokojů, třeba i na jiné datum. Hotelu stačí mít informace pouze o jednom klientovi, který zaštiťuje celý pobyt v hotelu (o ostatních účastnících pobytu nemusí být dostupné žádné informace). Pobyt může být vytvořen na základě rezervace, nebo k rezervaci pokoje vůbec nemusí dojít, pokud klient přijde přímo na recepci hotelu. Jednotlivé typy pokojů mají různé ceny, cena pokoje se navíc může lišit podle období (turistická sezóna), na které si klient pokoj objednává. Cena pokoje se zároveň odvíjí od toho, zda si host pokoj rezervuje dopředu, nebo až na místě. Klient si může přiobjednat k danému pobytu služby v hotelu navíc, jako např. pronájem bazénu, a to i vícekrát. IS dále bude schopen evidovat skutečně absolvované pobyty - tj. které pokoje klient od kdy do kdy obýval a jaké služby skutečně využil (od x do x naKteremPokoji). U každého pobytu je evidováno, který zaměstnanec převzal platbu za pobyt. 
+\section*{Diagram prípadov užitia}
+\vfill
+\begin{center}
+  \includegraphics[width=\linewidth]{src/uc}
+\end{center}
+\vfill
+\newpage
+\section*{Detaily prípadov užitia}
+\input{src/ucDetail1.tex}
+\input{src/ucDetail2.tex}
+\input{src/ucDetail3.tex}
+\section*{ER diagram}
+\vfill
+\begin{center}
+  \includegraphics[width=0.7\linewidth]{src/er}
+\end{center}
+\vfill
+\end{document}

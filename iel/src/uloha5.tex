@@ -1,0 +1,107 @@
+\section{Úloha~č.~5}
+\subsection{Zadanie}
+Sestavte diferenciální rovnici popisující chování obvodu na obrázku, dále ji
+upravte dosazením hodnot parametrů. Vypočítejte analytické řešení $u_{C} = f (t)$.
+Proveďte kontrolu výpočtu dosazením do sestavené diferenciální rovnice.
+
+\begin{table}[H]
+\begin{center}
+  \begin{tabular}{|c|c|c|c|c|}
+    \hline
+    sk. &  $U [V]$ & $C [F]$ & $R [\Omega]$ & $u_{C}(0) [V]$ \\ \hline
+    A & 20 & 40 & 10 & 9 \\ \hline
+  \end{tabular}
+\end{center}
+\end{table}
+\begin{center}
+  \includegraphics[width=0.8\columnwidth,keepaspectratio]{res/u5o1}
+\end{center}
+\subsection{Riešenie}
+Axiom: $u_{C}' = \frac{1}{C} i_{C}$ \\
+Obvodom tečie prúd $i$: 
+\begin{center}
+  \includegraphics[width=0.8\columnwidth,keepaspectratio]{res/u5o2}
+\end{center}
+\begin{align*}
+    i_{C} &= i & u_{C}' = \frac{1}{C} i
+\end{align*}
+\begin{align*}
+    U_{R} + u_{C} - U &= 0 \\
+    R.i &= U - u_{C}\\
+    i &= \frac{U - u_{C}}{R}
+\end{align*}
+Dosadíme do $u_C'$:
+\begin{align*}
+    u_{C}' &= \frac{1}{C} i = \frac{1}{C} \frac{U - u_{C}}{R} = \frac{U - u_{C}}{C R}
+\end{align*}
+Diferenciálna rovnica je: 
+\begin{align*}
+    u_{C}' &= \frac{U - u_{C}}{C R} &  u_{C}(0) = 9~V &\\
+\end{align*}
+Dosadíme zadané hodnoty:
+\begin{align*}
+    u_{C}' &= \frac{20 - u_{C}}{40.10}  \\
+    400u_{C}' &= 20 - u_{C} \\
+    400u_{C}'+ u_{C} &= 20 \\
+    20u_{C}' + \frac{u_{C}}{20}&= 1
+\end{align*}
+Vytvoríme charakteristrickú rovnicu:
+\begin{align*}
+    20\lambda + \frac{1}{20}&= 0 \\
+    20\lambda &= -\frac{1}{20} \\
+    \lambda &= -\frac{1}{400}
+\end{align*}
+Očakávané riešenie rovnice: 
+\begin{align*}
+    u_{C} (t) &= C(t).e^{\lambda.t} \\
+    u_{C} (t) &= C(t).e^{-\frac{t}{400}}
+\end{align*}
+Vypočítame $u_{C}'$ deriváciou $u_C$: 
+\begin{align*}
+    u_{C}' (t) &= C'(t).e^{-\frac{t}{400}} + C(t).e^{-\frac{t}{400}}.\left(-\frac{1}{400}\right) \\
+    u_{C}' (t) &= C'(t).e^{-\frac{t}{400}} - \frac{1}{400}C(t).e^{-\frac{t}{400}}
+\end{align*}
+Dosadíme $u_{C}$ a $u_{C}'$ do diferenciálnej rovnice: 
+\begin{align*}
+    400u_{C}'+ u_{C} &= 20 \\
+    400.\left(C'(t).e^{-\frac{t}{400}} - \frac{1}{400}C(t).e^{-\frac{t}{400}}\right) + C(t).e^{-\frac{t}{400}} &= 20 \\
+    400.C'(t).e^{-\frac{t}{400}} - C(t).e^{-\frac{t}{400}} + C(t).e^{-\frac{t}{400}} &= 20 \\
+    400.C'(t).e^{-\frac{t}{400}} &= 20 \\
+    C'(t).e^{-\frac{t}{400}} &= \frac{1}{20} \\
+    C'(t) &= \frac{1}{20e^{-\frac{t}{400}}} \\
+    C'(t) &= \frac{e^{\frac{t}{400}}}{20} \\
+\end{align*}
+Zintegrujeme $C'(t)$:
+\begin{align*}
+    \int C'(t) dt &= \int \frac{e^{\frac{t}{400}}}{20} dt \\
+    C(t) &= 20e^{\frac{t}{400}} + k
+\end{align*}
+Dosadíme $C (t)$ do očakávaného riešenia: 
+\begin{align*}
+    u_{C} (t) &= (20e^{\frac{t}{400}} + k)e^{\frac{-t}{400}}  \\
+    u_{C} (t) &= 20 + ke^{\frac{-t}{400}} 
+\end{align*}
+Pre vypočítanie konštanty $k$ využijeme počiatočnú podmienku:
+\begin{align*}
+    u_{C} (t) &= 20 + ke^{\frac{-t}{400}} & u_{C} (0) = 9~V \\
+    9 &= 20 + ke^{\frac{0}{400}} \\
+    9 &= 20 + k \\
+    k &= -11 \\
+\end{align*}
+Úplné riešenie je: 
+\begin{align*}
+    u_{C} (t) &= 20 - 11e^{\frac{-t}{400}} & u_{C} (0) = 9~V
+\end{align*}
+Spravíme skúšku dosadením do pôvodnej diferenciálnej rovnice. Predtým si však ešte vypočítame $u_{C}'$:
+\begin{align*}
+    u_{C}'(t) &= \left(21 - 11e^{\frac{-t}{400}}\right)' = \frac{11}{400}e^{\frac{-t}{400}}
+\end{align*}
+\begin{align*}
+    20u_{C}' + \frac{u_{C}}{20}& = 1 \\
+    20\left(\frac{11}{400}e^{\frac{-t}{400}}\right) + \frac{20 - 11e^{\frac{-t}{400}}}{20} &= 1 \\
+    400\left(\frac{11}{400}e^{\frac{-t}{400}}\right) + 20 - 11e^{\frac{-t}{400}} &= 20\\
+    11e^{\frac{-t}{400}} + 20 - 11e^{\frac{-t}{400}} &= 20\\
+    0 &= 0
+\end{align*}
+Skúška vyšla.
+\newpage

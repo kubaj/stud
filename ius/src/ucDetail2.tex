@@ -1,0 +1,53 @@
+\begin{center}
+\begin{tabularx}{\textwidth}{| X |}
+  \hline
+  \textbf{Identifikátor:} UC02\\
+  \hline
+  \textbf{Názov:} Zarezervovať pobyt\\
+  \hline
+  \textbf{Popis:} Klient \textbf{K} si zarezervuje pobyt v hoteli \\
+  \hline
+  \textbf{Priorita:} 1 \\
+  \hline
+  \textbf{Frekvencia} Niekoľkokrát týždenne \\
+  \hline
+  \textbf{Vstupné podmienky:} \\
+  %\begin{compactenum}
+        %\item Klient \textbf{K} je registrovaný v systéme
+  	%\item Klient \textbf{K} je prihlásený do systému
+  %\end{compactenum}\\
+  \hline
+  \textbf{Výstupné podmienky} Klient \textbf{K} má zarezervovanú izbu (izby) v hoteli \\
+  \hline
+  \textbf{Užívatelia:} Klient \textbf{K} \\ %, Recepčná hotela \textbf{R}, Vedúci hotela \textbf{V} \\
+  \hline
+  \textbf{Základná postupnosť:} \\
+\begin{compactenum}
+    \item Prípad užitia začína tým, že \textbf{K} si vyberie potrebný termín rezervácie a požadovaný počet lôžok.
+    \item Systém nájde podľa diagramu užitia \textbf{UC05} a zobrazí izby vyhovujúce požiadavkám spolu s cenami za 
+      jednotlivé izby, ako aj s celkovou cenou.
+    \item \textbf{K} si z nájdených izieb vyberie tie ktoré izby by si chcel rezervovať a potvrdením sa táto sada izieb 
+      pridá do rezervácie.
+    \item \textbf{K} môže ďalej:
+      \begin{compactenum}
+      \item pokračovať v dokončení rezervácie.
+      \item zvoliť iný dátum a pridať do rezervácie ďalšiu sadu izieb (Krok 1).
+      \end{compactenum}
+    \item Systém potrebuje priradiť rezerváciu k nejakému kontu \textbf{K}: 
+      \begin{compactenum}
+      \item ak si \textbf{K} už pri nejakej predchádzajúcej rezervácií vytvoril konto, tak sa prihlási sa do svojho konta.
+      \item ak konto nevlastní, vytvorí si ho zadaním osobných údajov: meno, priezvisko, adresa, telefónne číslo, e-mail.
+      \end{compactenum}
+    \item \textbf{K} potvrdí rezerváciu pobytu a zadané osobné údaje.
+    \item Systém odošle na e-mail \textbf{K} bankové údaje na zaplatenie zálohy.
+    \item \textbf{K} zaplatením zálohy potvrdí svoju rezerváciu. 
+  \end{compactenum}\\
+  \hline
+  \textbf{Alternatívna postupnosť:} \\
+  \begin{compactenum}
+    \item[1.-6.] \textbf{K} môže ukončiť proces rezervácie izby.
+    \item[8.] Ak \textbf{K} nezaplatí zálohu za ubytovanie do určeného termínu, systém zruší rezerváciu izieb.
+  \end{compactenum}\\
+  \hline
+\end{tabularx}
+\end{center}
