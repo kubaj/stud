@@ -13,19 +13,32 @@
 
 using namespace std;
 
+const string CODE_NOT_FOUND = "404 Not Found";
+const string CODE_OK = "200 OK";
+
 class HttpRequest {
 private:
+    int ParseRoute();
+public:
+    HttpRequest();
+    int ParseRequest(string request);
+
     map<string,string> headers;
     string type;
     string body;
     string route;
-public:
-    HttpRequest();
-    int ParseRequest(string request);
+    string filename;
+    string filetype;
 };
 
 class HttpResponse {
+public:
+    HttpResponse();
+    string ToString();
 
+    map<string, string> headers;
+    string code;
+    string body;
 };
 
 

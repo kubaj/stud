@@ -8,7 +8,8 @@
 #include<fcntl.h>
 #include <thread>
 #include <iostream>
-#include "http.h"
+#include "Http.h"
+#include "FileController.h"
 
 #define BYTES 1024
 
@@ -135,10 +136,18 @@ void respond(int sock) {
             write(sock, "HTTP/1.0 400 Bad Request\n", 25);
         }
 
-        write(sock, "HTTP/1.0 200 OK\n", 17);
+        FileController fileController(ROOT);
+
+        HttpResponse *response = fileController.HandleRequest(request);
+
+        if (response == NULL) {
+            write(sock, "HTTP/1.0 400 Bad Request\n", 25);
+        } else {
+            write(sock, response->ToString().c_str(), response->ToString().length());
+        }
+
 
         if (0) {
-
 
             //printf("%s", mesg);
             reqline[0] = strtok(mesg, " \t\n");
