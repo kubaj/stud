@@ -28,6 +28,7 @@ public:
     string body;
     string route;
     string filename;
+    string username;
     string filetype;
 };
 

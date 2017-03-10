@@ -136,6 +136,8 @@ void respond(int sock) {
             write(sock, "HTTP/1.0 400 Bad Request\n", 25);
         }
 
+        cout << request.username << endl;
+
         FileController fileController(ROOT);
 
         HttpResponse *response = fileController.HandleRequest(request);

@@ -64,6 +64,12 @@ int HttpRequest::ParseRoute() {
 
     filetype = regex_replace(route, rmuserfile, "");
 
+    smatch user;
+    cout << regex_search(route, user, rmuser) << endl;
+
+    username = user[0];
+    username = username.substr(1, username.length() - 2);
+
     return 0;
 }
 
