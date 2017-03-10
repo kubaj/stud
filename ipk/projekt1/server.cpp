@@ -5,13 +5,26 @@
 #include<sys/socket.h>
 #include<arpa/inet.h>
 #include<netdb.h>
-#include<fcntl.h>
 #include <thread>
 #include <iostream>
 #include "Http.h"
 #include "FileController.h"
 
 #define BYTES 1024
+
+/*
+ *               ,_---~~~~~----._
+ *         _,,_,*^____      _____``*g*\"*,
+ *        / __/ /'     ^.  /      \ ^@q   f
+ *       [  @f | @))    |  | @))   l  0 _/
+ *        \`/   \~_____/ __ \_____/    \
+ *         |           _l__l_           I
+ *         }          [______]          I    GO FTW!
+ *         ]            | | |           |
+ *         ]             ~ ~            |
+ *         |                            |
+ *          |                          |
+ */
 
 char *ROOT;
 int listenfd;
@@ -20,6 +33,8 @@ int listenfd;
 void startServer(char *);
 
 void respond(int);
+
+void ReturnResponse(int socket, HttpResponse *response);
 
 int main(int argc, char *argv[]) {
     using namespace std;
@@ -32,8 +47,6 @@ int main(int argc, char *argv[]) {
     char PORT[6];
     ROOT = getenv("PWD");
     strcpy(PORT, "8814");
-
-    int slot = 0;
 
     //Parsing the command line arguments
     while ((c = getopt(argc, argv, "p:r:")) != -1)
@@ -57,12 +70,9 @@ int main(int argc, char *argv[]) {
 
     startServer(PORT);
 
-    //thread worker(handleClient, client);
-
     // ACCEPT connections
     while (1) {
         addrlen = sizeof(clientaddr);
-        //clients[slot] =
 
         int conn = accept(listenfd, (struct sockaddr *) &clientaddr,
                                &addrlen);
@@ -75,8 +85,6 @@ int main(int argc, char *argv[]) {
         thread worker(respond, conn);
         worker.detach();
     }
-
-    return 0;
 }
 
 //start server
@@ -114,8 +122,7 @@ void startServer(char *port) {
 
 //client connection
 void respond(int sock) {
-    char mesg[99999], *reqline[3], data_to_send[BYTES], path[99999];
-    int fd, bytes_read;
+    char mesg[99999];
     ssize_t rcvd;
 
     memset((void *) mesg, (int) '\0', 99999);
@@ -133,54 +140,25 @@ void respond(int sock) {
 
         if (err) {
             cout << err << endl;
-            write(sock, "HTTP/1.0 400 Bad Request\n", 25);
+            ReturnResponse(sock, new HttpResponse(CODE_BADREQUEST));
         }
-
-        cout << request.username << endl;
 
         FileController fileController(ROOT);
 
+        if (fileController.CheckUser(request.username)) {
+            ReturnResponse(sock, new HttpResponse(CODE_UNAUTHORIZED));
+        }
+
         HttpResponse *response = fileController.HandleRequest(request);
 
-        if (response == NULL) {
-            write(sock, "HTTP/1.0 400 Bad Request\n", 25);
-        } else {
-            write(sock, response->ToString().c_str(), response->ToString().length());
-        }
-
-
-        if (0) {
-
-            //printf("%s", mesg);
-            reqline[0] = strtok(mesg, " \t\n");
-            if (strncmp(reqline[0], "GET\0", 4) == 0) {
-                reqline[1] = strtok(NULL, " \t");
-                reqline[2] = strtok(NULL, " \t\n");
-                if (strncmp(reqline[2], "HTTP/1.0", 8) != 0 &&
-                    strncmp(reqline[2], "HTTP/1.1", 8) != 0) {
-
-                } else {
-                    if (strncmp(reqline[1], "/\0", 2) == 0)
-                        reqline[1] = "/index.html";        //Because if no file is specified, index.html will be opened by default (like it happens in APACHE...
-
-                    strcpy(path, ROOT);
-                    strcpy(&path[strlen(ROOT)], reqline[1]);
-                    printf("file: %s\n", path);
-
-                    if ((fd = open(path, O_RDONLY)) != -1)    //FILE FOUND
-                    {
-                        send(sock, "HTTP/1.0 200 OK\n\n", 17, 0);
-                        while ((bytes_read = read(fd, data_to_send, BYTES)) > 0)
-                            write(sock, data_to_send, bytes_read);
-                    } else
-                        write(sock, "HTTP/1.0 404 Not Found\n",
-                              23); //FILE NOT FOUND
-                }
-            }
-        }
+        ReturnResponse(sock, response);
     }
 
     //Closing SOCKET
     shutdown(sock, SHUT_RDWR);
     close(sock);
+}
+
+void ReturnResponse(int socket, HttpResponse *response) {
+    write(socket, response->ToString().c_str(), response->ToString().length());
 }

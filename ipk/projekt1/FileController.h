@@ -16,6 +16,8 @@ public:
     FileController(string serverPath);
     HttpResponse * HandleRequest(HttpRequest request);
 
+    int CheckUser(string username);
+
 };
 
 

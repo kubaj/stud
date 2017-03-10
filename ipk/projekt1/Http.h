@@ -15,6 +15,9 @@ using namespace std;
 
 const string CODE_NOT_FOUND = "404 Not Found";
 const string CODE_OK = "200 OK";
+const string CODE_UNAUTHORIZED = "401 Unauthorized";
+const string CODE_NOTFOUND = "404 Not Found";
+const string CODE_BADREQUEST = "400 Bad Request";
 
 class HttpRequest {
 private:
@@ -35,6 +38,7 @@ public:
 class HttpResponse {
 public:
     HttpResponse();
+    HttpResponse(string code);
     string ToString();
 
     map<string, string> headers;

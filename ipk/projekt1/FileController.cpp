@@ -5,6 +5,7 @@
 #include <cstring>
 #include <iostream>
 #include <fstream>
+#include <pwd.h>
 #include "FileController.h"
 
 FileController::FileController(string serverPath) {
@@ -12,28 +13,31 @@ FileController::FileController(string serverPath) {
 }
 
 HttpResponse *FileController::HandleRequest(HttpRequest request) {
-    HttpResponse *response = new(HttpResponse);
+    HttpResponse *response = new HttpResponse();
+
+    string fullPath = serverPath + request.username + '/' + request.filename;
 
     if (!request.filetype.compare("file")) {
         if (!request.type.compare("POST") || !request.type.compare("PUT")) {
             ofstream ofs;
-            ofs.open(serverPath + request.filename);
+            ofs.open(fullPath);
             if (!ofs.is_open()) {
-                return NULL;
+                response->code = CODE_NOT_FOUND;
+                return response;
             }
 
             ofs << request.body;
             ofs.close();
         } else if (!request.type.compare("GET")) {
             ifstream ifs;
-            ifs.open(serverPath + request.filename);
+            ifs.open(fullPath);
             if (!ifs.is_open()) {
                 response->code = CODE_NOT_FOUND;
                 return response;
             }
             response->body = string((istreambuf_iterator<char>(ifs)),(istreambuf_iterator<char>()));
         } else if (!request.type.compare("DELETE")) {
-            int err = remove((serverPath + request.filename).c_str());
+            int err = remove((fullPath).c_str());
             if (err != 0) {
                 response->code = CODE_NOT_FOUND;
             }
@@ -45,3 +49,12 @@ HttpResponse *FileController::HandleRequest(HttpRequest request) {
 
     return response;
 }
+
+int FileController::CheckUser(string username) {
+    if (getpwnam(username.c_str()) == NULL) {
+        return 1;
+    }
+
+    return 0;
+}
+

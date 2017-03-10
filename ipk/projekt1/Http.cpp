@@ -77,6 +77,10 @@ HttpResponse::HttpResponse() {
     code = CODE_OK;
 }
 
+HttpResponse::HttpResponse(string code) {
+    this->code = code;
+}
+
 string HttpResponse::ToString() {
     string responseString = "HTTP/1.0 " + code + "\r\n";
     headers.insert(make_pair("Date", IPKUtils::RFC2616DateNow()));
