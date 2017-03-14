@@ -50,7 +50,7 @@ int HttpRequest::ParseRequest(string request) {
 
 int HttpRequest::ParseRoute() {
 
-    regex formatreg(R"rgx(/[a-zA-Z0-9]+/.+\?type=(file|folder)$)rgx");
+    regex formatreg(R"rgx(/[a-zA-Z0-9]+/.*\?type=(file|folder)$)rgx");
     if (!regex_match(route, formatreg)) {
         return 3;
     }
@@ -65,7 +65,7 @@ int HttpRequest::ParseRoute() {
     filetype = regex_replace(route, rmuserfile, "");
 
     smatch user;
-    cout << regex_search(route, user, rmuser) << endl;
+    regex_search(route, user, rmuser);
 
     username = user[0];
     username = username.substr(1, username.length() - 2);
@@ -75,10 +75,12 @@ int HttpRequest::ParseRoute() {
 
 HttpResponse::HttpResponse() {
     code = CODE_OK;
+    body = "";
 }
 
 HttpResponse::HttpResponse(string code) {
     this->code = code;
+    body = "";
 }
 
 string HttpResponse::ToString() {

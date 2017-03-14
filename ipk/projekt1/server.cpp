@@ -27,7 +27,7 @@
  */
 
 char *ROOT;
-int listenfd;
+int socketino;
 
 //void error(char *);
 void startServer(char *);
@@ -74,7 +74,7 @@ int main(int argc, char *argv[]) {
     while (1) {
         addrlen = sizeof(clientaddr);
 
-        int conn = accept(listenfd, (struct sockaddr *) &clientaddr,
+        int conn = accept(socketino, (struct sockaddr *) &clientaddr,
                                &addrlen);
 
         if (conn < 0) {
@@ -102,9 +102,9 @@ void startServer(char *port) {
     }
     // socket and bind
     for (p = res; p != NULL; p = p->ai_next) {
-        listenfd = socket(p->ai_family, p->ai_socktype, 0);
-        if (listenfd == -1) continue;
-        if (bind(listenfd, p->ai_addr, p->ai_addrlen) == 0) break;
+        socketino = socket(p->ai_family, p->ai_socktype, 0);
+        if (socketino == -1) continue;
+        if (bind(socketino, p->ai_addr, p->ai_addrlen) == 0) break;
     }
     if (p == NULL) {
         perror("socket() or bind()");
@@ -114,7 +114,7 @@ void startServer(char *port) {
     freeaddrinfo(res);
 
     // listen for incoming connections
-    if (listen(listenfd, 1000000) != 0) {
+    if (listen(socketino, 1000000) != 0) {
         perror("listen() error");
         exit(1);
     }
@@ -136,21 +136,26 @@ void respond(int sock) {
     else    // message received
     {
         HttpRequest request;
+        cout << mesg << endl;
         int err = request.ParseRequest(string(mesg));
 
         if (err) {
-            cout << err << endl;
-            ReturnResponse(sock, new HttpResponse(CODE_BADREQUEST));
+            ReturnResponse(sock, new HttpResponse(CODE_BAD_REQUEST));
+            shutdown(sock, SHUT_RDWR);
+            close(sock);
+            return;
         }
 
         FileController fileController(ROOT);
 
         if (fileController.CheckUser(request.username)) {
             ReturnResponse(sock, new HttpResponse(CODE_UNAUTHORIZED));
+            shutdown(sock, SHUT_RDWR);
+            close(sock);
+            return;
         }
 
         HttpResponse *response = fileController.HandleRequest(request);
-
         ReturnResponse(sock, response);
     }
 
