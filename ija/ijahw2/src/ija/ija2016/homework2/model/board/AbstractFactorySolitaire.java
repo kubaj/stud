@@ -5,7 +5,7 @@ import ija.ija2016.homework2.model.cards.CardDeck;
 import ija.ija2016.homework2.model.cards.CardStack;
 
 /**
- * Created by jakub on 3/11/17.
+ * Created by jakub on 3/14/17.
  */
 public abstract class AbstractFactorySolitaire {
     public abstract Card createCard(Card.Color color, int value);

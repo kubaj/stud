@@ -1,66 +1,124 @@
 package ija.ija2016.homework2.model.cards;
 
 import java.util.ArrayList;
-import java.util.List;
 
 /**
  * Created by xkulic03 on 2/24/17.
  */
-public class CardStack {
+public class CardStack
+{
+    private ArrayList<Card> cards;
+    private boolean wPack;
 
-    private int size;
-    ArrayList<Card> cards;
-
-    public CardStack(int size) {
-        this.size = size;
+    public CardStack(boolean wPack)
+    {
         this.cards = new ArrayList<Card>();
+        this.wPack = wPack;
     }
 
-    public boolean isEmpty() {
-        return cards.size() == 0;
+    public int size()
+    {
+        return this.cards.size();
     }
 
-    public void put(Card card) {
-        if (cards.size() == this.size) {
-            return;
-        }
-        this.cards.add(card);
+    public boolean isEmpty()
+    {
+        return this.cards.isEmpty();
     }
 
-    public void put(CardStack stack) {
-        cards.addAll(stack.getCards());
-    }
-
-    public ArrayList<Card> getCards() {
+    public ArrayList<Card> getList()
+    {
         return this.cards;
     }
 
-    public int size() {
-        return cards.size();
-    }
-
-    public CardStack takeFrom(Card card) {
-        int cardIndex = this.cards.indexOf(card);
-        CardStack cardStack = new CardStack(this.cards.size());
-        cardStack.cards = new ArrayList<>(this.cards.subList(cardIndex, this.cards.size()));
-        for (; cardIndex < this.cards.size(); ) {
-            this.cards.remove(cardIndex);
+    public Card pop()
+    {
+        if (this.cards.size() < 1)
+        {
+            return null;
         }
-        return cardStack;
+
+        Card tempCard = this.cards.get(this.size() - 1);
+        this.cards.remove(this.size() - 1);
+
+        return tempCard;
     }
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+    public CardStack pop(Card card)
+    {
+        int startIndex = -1;
+        for (int i = 0; i < this.cards.size(); i++)
+        {
+            if (this.cards.get(i).equals(card))
+            {
+                startIndex = i;
+                break;
+            }
+        }
 
-        CardStack cardStack = (CardStack) o;
+        if (startIndex == -1)
+        {
+            return null;
+        }
 
-        return cards != null ? cards.equals(cardStack.cards) : cardStack.cards == null;
+        CardStack newStack = new CardStack(false);
+        int stackSize = this.cards.size();
+
+        for (int i = startIndex; i < stackSize; ++i)
+        {
+            newStack.put(this.cards.get(startIndex));
+            this.cards.remove(startIndex);
+        }
+
+        return newStack;
     }
 
-    @Override
-    public int hashCode() {
-        return cards != null ? cards.hashCode() : 0;
+    public boolean put(Card card)
+    {
+        if (this.wPack)
+        {
+            if (this.isEmpty())
+            {
+                if (card.value() != 13)
+                {
+                    return false;
+                }
+            }
+            else
+            {
+                int lastCardValue = this.cards.get(this.size() - 1).value();
+                if (lastCardValue - card.value() != 1 ||
+                        this.cards.get(this.size() - 1).similarColorTo(card))
+                {
+                    return false;
+                }
+            }
+        }
+
+        this.cards.add(card);
+        return true;
+    }
+
+    public boolean put(CardStack stack)
+    {
+        if (this.isEmpty())
+        {
+            return false;
+        }
+
+        if (stack.isEmpty())
+        {
+            return true;
+        }
+
+        ArrayList<Card> inputList = stack.getList();
+        while (!inputList.isEmpty())
+        {
+            int lastIndex = inputList.size() - 1;
+            this.cards.add(inputList.get(lastIndex));
+            inputList.remove(lastIndex);
+        }
+
+        return true;
     }
 }

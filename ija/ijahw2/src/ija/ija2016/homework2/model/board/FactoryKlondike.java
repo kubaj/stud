@@ -4,6 +4,9 @@ import ija.ija2016.homework2.model.cards.Card;
 import ija.ija2016.homework2.model.cards.CardDeck;
 import ija.ija2016.homework2.model.cards.CardStack;
 
+/**
+ * Created by xkulic03 on 3/14/17.
+ */
 public class FactoryKlondike extends AbstractFactorySolitaire {
 
     @Override
@@ -14,16 +17,25 @@ public class FactoryKlondike extends AbstractFactorySolitaire {
 
     @Override
     public CardDeck createCardDeck() {
-        return CardDeck.createStandardDeck();
+        CardDeck newDeck = new CardDeck(null);
+        for (Card.Color c : Card.Color.values())
+        {
+            for (int i = 1; i <= 13; i++)
+            {
+                newDeck.put(new Card(c, i));
+            }
+        }
+
+        return newDeck;
     }
 
     @Override
     public CardDeck createTargetPack(Card.Color color) {
-        return null;
+        return new CardDeck(color);
     }
 
     @Override
     public CardStack createWorkingPack() {
-        return null;
+        return new CardStack(true);
     }
 }

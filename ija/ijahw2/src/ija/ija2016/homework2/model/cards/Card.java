@@ -23,6 +23,11 @@ public class Card {
         return this.value;
     }
 
+    public boolean similarColorTo(Card c)
+    {
+        return this.c.similarColorTo(c.color());
+    }
+
     @Override
     public String toString() {
         String tValue;
@@ -44,15 +49,6 @@ public class Card {
     public int compareValue(Card c) {
         return this.value() - c.value();
     }
-
-    public boolean similarColorTo(Card c) {
-        boolean cardA = this.color() == Color.CLUBS || this.color() == Color.SPADES;
-        boolean cardB = c.color() == Color.CLUBS || c.color() == Color.SPADES;
-
-        return cardA == cardB;
-    }
-
-
 
     @Override
     public boolean equals(Object o) {
@@ -103,6 +99,13 @@ public class Card {
                 default:
                     throw new IllegalArgumentException();
             }
+        }
+
+        public boolean similarColorTo(Card.Color c) {
+            boolean cardA = this == Color.CLUBS || this == Color.SPADES;
+            boolean cardB = c == Color.CLUBS || c == Color.SPADES;
+
+            return cardA == cardB;
         }
     }
 

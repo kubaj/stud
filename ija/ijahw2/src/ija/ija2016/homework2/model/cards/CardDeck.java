@@ -1,52 +1,92 @@
 package ija.ija2016.homework2.model.cards;
 
-import java.util.Arrays;
+import java.util.ArrayList;
 
 /**
  * Created by xkulic03 on 2/24/17.
  */
 public class CardDeck {
 
-    private Card[] cardDeck;
-    private int top;
-    private int size;
+    private Card.Color color;
+    private ArrayList<Card> cards;
 
-    public CardDeck(int size) {
-        this.cardDeck = new Card[size];
-        this.top = -1;
-        this.size = size;
+    public CardDeck(Card.Color color)
+    {
+        this.cards = new ArrayList<Card>();
+        this.color = color;
     }
 
-    public static CardDeck createStandardDeck() {
-        CardDeck cd = new CardDeck(52);
-        for (Card.Color c: Card.Color.values()) {
-            for (int i = 1; i <= 13; i++) {
-                cd.put(new Card(c, i));
-            }
-        }
-
-        return cd;
-    }
-
-    public int size() {
-        return this.top + 1;
-    }
-
-    public void put(Card card) {
-
-        if (top + 1 == size) {
-            return;
-        }
-
-        this.cardDeck[++top] = card;
-    }
-
-    public Card pop() {
-
-        if (top == -1) {
+    public Card get()
+    {
+        if (this.cards.isEmpty())
+        {
             return null;
         }
 
-        return this.cardDeck[top--];
+        return this.cards.get(this.cards.size() - 1);
+    }
+
+    public Card get(int index)
+    {
+        if (this.cards.isEmpty())
+        {
+            return null;
+        }
+
+        return this.cards.get(index);
+    }
+
+    public boolean isEmpty()
+    {
+        return this.cards.isEmpty();
+    }
+
+    public Card pop()
+    {
+        if (this.cards.size() <= 0)
+        {
+            return null;
+        }
+
+        int lastIndex = this.cards.size() - 1;
+        Card tempCard = this.cards.get(lastIndex);
+        this.cards.remove(lastIndex);
+
+        return tempCard;
+    }
+
+    public boolean put(Card card)
+    {
+        if (this.color != null)
+        {
+            if (!this.color.similarColorTo(card.color()))
+            {
+                return false;
+            }
+
+            if (this.isEmpty())
+            {
+                if (card.value() != 1)
+                {
+                    return false;
+                }
+
+                this.cards.add(card);
+                return true;
+            }
+
+            if (card.value() - this.cards.get(this.size() - 1).value() != 1)
+            {
+                return false;
+            }
+        }
+
+        this.cards.add(card);
+        return true;
+    }
+
+    public int size()
+    {
+        return this.cards.size();
     }
 }
