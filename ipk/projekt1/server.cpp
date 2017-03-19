@@ -125,9 +125,9 @@ void respond(int sock) {
     char mesg[99999];
     ssize_t rcvd;
 
-    memset((void *) mesg, (int) '\0', 99999);
+    memset((void *) mesg, (int) '\0', 10000);
 
-    rcvd = recv(sock, mesg, 99999, 0);
+    rcvd = recv(sock, mesg, 10000, 0);
 
     if (rcvd < 0)    // receive error
         fprintf(stderr, ("recv() error\n"));
@@ -136,7 +136,9 @@ void respond(int sock) {
     else    // message received
     {
         HttpRequest request;
-        cout << mesg << endl;
+        request.socket = sock;
+
+        cout << mesg  << endl;
         int err = request.ParseRequest(string(mesg));
 
         if (err) {

@@ -18,6 +18,7 @@ public:
 
     int CheckUser(string username);
 
+    int HandleResponse(HttpResponse response, string operation);
 };
 
 

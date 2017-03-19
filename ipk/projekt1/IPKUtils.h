@@ -11,7 +11,12 @@ using namespace std;
 class IPKUtils {
 public:
     static string RFC2616DateNow();
+
+    static int GetAddressPosition(string url);
+
+    static const string EncodeURL(const string &s);
+
+    static const string DecodeURL(const string &str);
+
 };
-
-
 #endif //PROJEKT1_IPKUTILS_H
