@@ -46,7 +46,7 @@ int main(int argc, char *argv[]) {
     //Default Values PATH = ~/ and PORT=10000
     char PORT[6];
     ROOT = getenv("PWD");
-    strcpy(PORT, "8814");
+    strcpy(PORT, "6677");
 
     //Parsing the command line arguments
     while ((c = getopt(argc, argv, "p:r:")) != -1)

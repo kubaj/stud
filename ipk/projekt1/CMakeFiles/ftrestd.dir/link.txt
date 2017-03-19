@@ -1,0 +1,1 @@
+/usr/bin/c++      CMakeFiles/ftrestd.dir/server.cpp.o CMakeFiles/ftrestd.dir/Http.cpp.o CMakeFiles/ftrestd.dir/FileController.cpp.o CMakeFiles/ftrestd.dir/IPKUtils.cpp.o  -o ftrestd -lpthread 

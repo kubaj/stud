@@ -1,0 +1,4 @@
+/home/jakub/fit/stud/ipk/projekt1/CMakeFiles/rebuild_cache.dir
+/home/jakub/fit/stud/ipk/projekt1/CMakeFiles/ftrest.dir
+/home/jakub/fit/stud/ipk/projekt1/CMakeFiles/edit_cache.dir
+/home/jakub/fit/stud/ipk/projekt1/CMakeFiles/ftrestd.dir

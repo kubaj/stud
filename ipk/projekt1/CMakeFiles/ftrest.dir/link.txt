@@ -1,0 +1,1 @@
+/usr/bin/c++      CMakeFiles/ftrest.dir/client.cpp.o CMakeFiles/ftrest.dir/Http.cpp.o CMakeFiles/ftrest.dir/FileController.cpp.o CMakeFiles/ftrest.dir/IPKUtils.cpp.o  -o ftrest 
