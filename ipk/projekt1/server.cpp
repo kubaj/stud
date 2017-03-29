@@ -138,7 +138,6 @@ void respond(int sock) {
         HttpRequest request;
         request.socket = sock;
 
-        cout << mesg  << endl;
         int err = request.ParseRequest(string(mesg));
 
         if (err) {
