@@ -1,31 +1,85 @@
 #!/usr/bin/env python3.6
 import re
+import sys
+import getopt
+import os
 
 class IPPDir:
     def __init__(self, name):
         self.files = list()
         self.name = name 
+    def do_it(self):
+        for f in self.files:
+           f.read_from_file() 
+    def __str__(self):
+        string = "<functions dir=\"" + self.name + "\">\n"
+        for f in self.files:
+            string += f.__str__() 
+        string += "</functions>"
+        return string
+    def __repr__(self):
+        return self.__str__()
 
 class IPPFile:
     def __init__(self, name):
         self.functions = list()
+        self.funcDict = dict()
         self.name = name 
+
+    def read_from_file(self):
+        tokens = list()
+        try:
+            with open(self.name, 'r') as f:
+                code = remove_comments(f.read())
+                for token in tokenize(code):
+                    if token[0] != 'whitespace':
+                        tokens.append(id_to_reserved_word(token))
+        except Exception as err:
+            panic(err, 2)
+        
+        self.read_from_tokens(tokens)
+
     def process(self, part_a, part_b):
-        print(part_a)
-        print(part_b)
-        if tokens[len(part_a) - 1][0] != 'identifier':
-            print("FUCK UP ! Bitch!")
+        if globfig['inline'] and part_a[0][0] == 'inline':
+            return
+        # Get function name
+        if part_a[len(part_a) - 1][0] != 'identifier':
             return None
-        name = tokens[len(part_a) - 1][1]
-        ret_val = ""
+        name = part_a[len(part_a) - 1][1]
+
+        # Get return value
+        ret_val = list()
 
         for x in range(0, len(part_a) - 1):
             if part_a[x][0] == 'identifier':
-                ret_val = ret_val + ' ' + part_a[x][1]
+                ret_val.append(part_a[x][1])
             else:
-                ret_val = ret_val + ' ' + part_a[x][1]
+                ret_val.append(token_to_string(part_a[x][0]))
 
-        self.functions.append(IPPFunc(name, ret_val))
+        f = IPPFunc(name, os.path.basename(self.name), " ".join(ret_val))
+
+        pnumber = 1
+        p = list()
+
+        for x in range(0, len(part_b) - 1):
+            if part_b[x][0] == 'comma':
+                f.params.append(IPPParam(pnumber, " ".join(p)))
+                pnumber += 1
+                p = list()
+            else:
+                if part_b[x][0] == 'identifier':
+                    p.append(part_b[x][1])
+                else:
+                    p.append(token_to_string(part_b[x][0]))
+
+        if len(p) != 0:
+            f.params.append(IPPParam(pnumber, " ".join(p)))
+            
+        if globfig["nodup"] and (name in self.funcDict):
+            return
+        
+        self.functions.append(f)
+        self.funcDict[name] = True
         
     def read_from_tokens(self, tokens):
         start = 0
@@ -42,21 +96,28 @@ class IPPFile:
                 self.process(tokens[start:position], tokens[position + 1:x - 1])
                 start = x + 1
 
+    def __str__(self):
+        out = ""
+        for f in self.functions:
+            out += f.__str__()
+        return out
+    def __repr__(self):
+        return self.__str__()
 
-               # f = self.get_name_return(tokens[start_position:position])
-               # if f == None:
-               #     print(tokens[start_position:position])
-               # else:
-               #     self.functions.append(IPPFunc(f[0],f[1]))
 class IPPFunc:
-    def __init__(self, name, rettype):
+    def __init__(self, name, filename, rettype):
         self.params = list()
         self.name = name
+        self.filename = filename
         self.rettype = rettype
         self.varargs = 'false'
     def __str__(self):
-        string = "<function file=\"" + self.name + "\" name=\"" + self.name + "\" varargs=\"" + self.varargs + "\" rettype=\"" + self.rettype + "\">\n"
-        string += "</function>\n"
+        if len(self.params) > globfig["maxpar"]:
+            return ""
+        string = globfig["indent"] + "<function file=\"" + self.filename + "\" name=\"" + self.name + "\" varargs=\"" + self.varargs + "\" rettype=\"" + self.rettype + "\">\n"
+        for f in self.params:
+            string += globfig["indent"] * 2 + f.__str__() + "\n"
+        string += globfig["indent"] + "</function>\n"
         return string
     def __repr__(self):
         return self.__str__()
@@ -66,7 +127,9 @@ class IPPParam:
         self.number = number
         self.paramtype = paramtype
     def __str__(self):
-        return "<param number=\"" + self.number + "\" type=\"" + self.paramtype + "\" />"
+        return "<param number=\"" + str(self.number) + "\" type=\"" + self.paramtype + "\" />"
+    def __repr__(self):
+        return self.__str__()
 
 directory = IPPDir("Placeholder")
 directory.files.append(IPPFile("FileName"))
@@ -88,6 +151,7 @@ reserved_words["char"] = True
 reserved_words["const"] = True
 reserved_words["double"] = True
 reserved_words["float"] = True
+reserved_words["inline"] = True
 reserved_words["int"] = True
 reserved_words["long"] = True
 reserved_words["short"] = True
@@ -96,6 +160,19 @@ reserved_words["static"] = True
 reserved_words["struct"] = True
 reserved_words["unsigned"] = True
 reserved_words["void"] = True
+
+tknz = dict()
+tknz["open_bracket"] = "("
+tknz["close_bracket"] = ")"
+tknz["slash"] = "/"
+tknz["pointer"] = "*"
+tknz["semicolon"] = ";"
+
+def token_to_string(string):
+    if string in reserved_words:
+        return string
+    else:
+        return tknz[string]
 
 def remove_comments(string):
     pattern = r"(\".*?\"|\'.*?\')|(/\*.*?\*/|//[^\r\n]*$|#[^\r\n]*$|^[\w\s]+{.*?};)"
@@ -131,16 +208,102 @@ def id_to_reserved_word(token):
         return (token[1],"")
     return token
 
-tokens = list()
-with open('nieco.h', 'r') as f:
-    code = remove_comments(f.read())
-    print(code)
-    for token in tokenize(code):
-        if token[0] != 'whitespace':
-            tokens.append(id_to_reserved_word(token))
+# Learning to walk again, I believe I've waited long enough, where do I begin?
+def walk(root):
+    dirzYolo = list()
 
-suborikcmuqycmuk = IPPFile("nieco.h")
-suborikcmuqycmuk.read_from_tokens(tokens)
+    for root, dirs, files in os.walk(root):
+        direktoria = IPPDir(root + '/')
 
-print(suborikcmuqycmuk.functions)
+        for f in files:
+            filename, extension = os.path.splitext(f)
+            if extension == '.h':
+                direktoria.files.append(IPPFile(root + '/' + f))
 
+        dirzYolo.append(direktoria)
+
+    return dirzYolo
+
+def panic(message, code):
+    print(message, file=sys.stderr)
+    sys.exit(code)
+
+def print_help():
+    print("CHA in Python. Usage:")
+    print("\t--help - prints help")
+    print("\t--input=[file] - defines input file")
+    print("\t--output=[file] - defines output file")
+    print("\t--pretty-xml=[indent] - sets indentation of each xml subelement in number of spaces")
+    print("\t--no-inline - ignore inline functions")
+    print("\t--max-par=[n] - print only functions with less than n params")
+    print("\t--no-duplicates - print only last function if there are any with same name")
+    print("\t--remove-whitespace - rettype and type are printed without withspaces")
+
+try:
+    optlist, args = getopt.getopt(sys.argv[1:], '', ['help', 'output=', 'input=','pretty-xml=','no-inline','no-duplicates','max-par=','remove-whitespaces'])
+except getopt.GetoptError as err:
+    panic(err, 2)
+
+optlist = dict(optlist)
+
+if '--help' in optlist:
+    print_help()
+
+globfig = dict()
+globfig["indent"] = "    "
+globfig["inline"] = False
+globfig["maxpar"] = 100000000
+globfig["nodup"] = False
+
+if '--pretty-xml' in optlist:
+    if optlist['--pretty-xml'].isnumeric():
+        globfig['indent'] = " " * int(optlist['--pretty-xml'])
+    else:
+        panic("Number expected in option --pretty-xml", 1)
+
+if '--no-inline' in optlist:
+    globfig["inline"] = True
+    
+if '--no-duplicates' in optlist:
+    globfig["nodup"] = True
+    
+if '--no-duplicates' in optlist:
+    globfig["nodup"] = True
+
+if '--max-par' in optlist:
+    if optlist['--max-par'].isnumeric():
+        globfig['maxpar'] = int(optlist['--max-par'])
+    else:
+        panic("Number expected in option --max-par", 1)
+
+if '--input' in optlist:
+    if os.path.isfile(optlist['--input']):
+        defaultDir = IPPDir("")
+        defaultDir.files.append(IPPFile(optlist['--input']))
+        dirzYolo = list()
+        dirzYolo.append(defaultDir)
+        d = ""
+    elif os.path.isdir(optlist['--input']):
+        d = optlist['--input']
+else:
+    d = "."
+
+if d != "":
+    dirzYolo = walk(d)
+
+for d in dirzYolo:
+    d.do_it()
+    if '--output' in optlist:
+        try:
+            with open(optlist['--output'], 'w') as f:
+                f.write(d.__str__())
+        except Exception as err:
+            panic(err, 3)
+    else:
+        print(d)
+
+# suborikcmuqycmuk = IPPFile("nieco.h")
+# suborikcmuqycmuk.read_from_tokens(tokens)
+# 
+# print(suborikcmuqycmuk.__str__())
+# 
