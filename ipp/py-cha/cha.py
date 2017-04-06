@@ -5,7 +5,7 @@ import getopt
 import os
 
 # TODO: 
-# fix directory - only one in whole output
+# DONE fix directory - only one in whole output
 # fix directory - two slashes
 # fix inline check
 # fix parameter 'void'
@@ -15,7 +15,7 @@ class IPPDir:
     def __init__(self, name):
         self.files = list()
         self.name = name 
-    def do_it(self):
+    def do_it   (self):
         for f in self.files:
            f.read_from_file() 
     def __str__(self):
@@ -51,7 +51,7 @@ class IPPFile:
         self.read_from_tokens(tokens)
 
     def process(self, part_a, part_b):
-        if globfig['inline'] and part_a[0][0] == 'inline':
+        if is_inline(part_a):
             return
 
         funNamePos = 0
@@ -74,7 +74,7 @@ class IPPFile:
         varargs = has_vararg(part_b)
         f = IPPFunc(name, self.name, get_normalized_ret(ret_val), varargs)
 
-        pnumber = 1
+        pnumber = 0
         p = list()
 
         for x in range(0, len(part_b) - 1):
@@ -88,9 +88,9 @@ class IPPFile:
                 else:
                     p.append(token_to_string(part_b[x][0]))
 
-        if len(p) != 0:
-            p.pop()
+        if len(p) != 0 and varargs == 'no':
             f.params.append(IPPParam(pnumber, get_normalized_params(p)))
+            pnumber += 1
             
         if globfig["nodup"] and (name in self.funcDict):
             return
@@ -110,7 +110,7 @@ class IPPFile:
             if tokens[x][0] == 'close_bracket':
                 bracket_counter -= 1
             if tokens[x][0] == 'semicolon':
-                self.process(tokens[start:position], tokens[position + 1:x])
+                self.process(tokens[start:position], tokens[position + 1:x - 1])
                 start = x + 1
 
     def __str__(self):
@@ -194,6 +194,16 @@ def has_vararg(params):
             return "yes"
     return "no"
 
+def is_inline(params):
+    if globfig['inline'] == False:
+        return False
+    
+    for x in range(0,len(params)):
+        if params[x][0] == 'inline':
+            return True
+
+    return False
+
 def token_to_string(string):
     if string in reserved_words:
         return string
@@ -268,17 +278,17 @@ def get_normalized_ret(val):
 
 # Learning to walk again, I believe I've waited long enough, where do I begin?
 def walk(root):
-    dirzYolo = list()
+    dirzYolo = IPPDir(root)
 
     for root, dirs, files in os.walk(root):
-        direktoria = IPPDir(root + '/')
+        # direktoria = IPPDir(root + '/')
 
         for f in files:
             filename, extension = os.path.splitext(f)
             if extension == '.h':
-                direktoria.files.append(IPPFile(root + '/' + f))
+                dirzYolo.files.append(IPPFile(root + '/' + f))
 
-        dirzYolo.append(direktoria)
+        # dirzYolo.append(direktoria)
 
     return dirzYolo
 
@@ -337,13 +347,14 @@ if '--max-par' in optlist:
         globfig['maxpar'] = int(optlist['--max-par'])
     else:
         panic("Number expected in option --max-par", 1)
+
 d = ""
-dirzYolo = list()
+dirzYolo = IPPDir
+
 if '--input' in optlist:
     if os.path.isfile(optlist['--input']):
-        defaultDir = IPPDir("")
-        defaultDir.files.append(IPPFile(optlist['--input']))
-        dirzYolo.append(defaultDir)
+        dirzYolo = IPPDir("")
+        dirzYolo.files.append(IPPFile(optlist['--input']))
     elif os.path.isdir(optlist['--input']):
         d = optlist['--input']
     else:
@@ -354,15 +365,14 @@ else:
 if d != "":
     dirzYolo = walk(d)
 
-for d in dirzYolo:
-    d.do_it()
-    if '--output' in optlist:
-        try:
-            with open(optlist['--output'], 'w') as f:
-                f.write("<?xml version=\"1.0\" encoding=\"UTF-8\"?>")
-                f.write(d.__str__())
-        except Exception as err:
-            panic(err, 3)
-    else:
-        print("<?xml version=\"1.0\" encoding=\"UTF-8\"?>")
-        print(d)
+dirzYolo.do_it()
+if '--output' in optlist:
+    try:
+        with open(optlist['--output'], 'w') as f:
+            f.write("<?xml version=\"1.0\" encoding=\"UTF-8\"?>")
+            f.write(dirzYolo.__str__())
+    except Exception as err:
+        panic(err, 3)
+else:
+    print("<?xml version=\"1.0\" encoding=\"UTF-8\"?>")
+    print(dirzYolo)
