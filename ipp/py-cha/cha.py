@@ -1,15 +1,34 @@
 #!/usr/bin/env python3.6
+
+##              ##
+### ###    ### ###
+#### xkulic03 ####
+### ###    ### ###
+##              ##
+
+#          ,_---~~~~~----._         
+#   _,,_,*^____      _____``*g*\"*, 
+#  / __/ /'     ^.  /      \ ^@q   f 
+# [  @f | @))    |  | @))   l  0 _/  
+#  \`/   \~____ / __ \_____/    \   
+#   |           _l__l_           I   
+#   }          [______]           I  
+#   ]            | | |            |  
+#   ]             ~ ~             |  
+#   |                            |   
+#    |                           |   
+
+#    Golang for 1st project please.
+#       Make FIT great again!
+
 import re
 import sys
 import getopt
 import os
 
 # TODO: 
-# DONE fix directory - only one in whole output
-# fix directory - two slashes
-# fix inline check
-# fix parameter 'void'
-# fix removing param name from param
+# fix removing whitespaces
+# pointers to functions as parameters 
 
 class IPPDir:
     def __init__(self, name):
@@ -65,6 +84,8 @@ class IPPFile:
         # Get return value
         ret_val = list()
 
+        bracket_counter = 0
+        
         for x in range(0, funNamePos):
             if part_a[x][0] == 'identifier' or part_a[x][0] == 'whitespace':
                 ret_val.append(part_a[x][1])
@@ -74,23 +95,29 @@ class IPPFile:
         varargs = has_vararg(part_b)
         f = IPPFunc(name, self.name, get_normalized_ret(ret_val), varargs)
 
-        pnumber = 0
+        pnumber = 1
         p = list()
 
-        for x in range(0, len(part_b) - 1):
-            if part_b[x][0] == 'comma':
+        bracket_counter = 0
+
+        for item in part_b:
+            if bracket_counter == 0 and item[0] == 'comma':
                 f.params.append(IPPParam(pnumber, get_normalized_params(p)))
                 pnumber += 1
                 p = list()
             else:
-                if part_b[x][0] == 'identifier' or part_b[x][0] == 'whitespace':
-                    p.append(part_b[x][1])
-                else:
-                    p.append(token_to_string(part_b[x][0]))
+                if item[0] == 'open_bracket':
+                    bracket_counter += 1
+                elif item[0] == 'close_bracket': 
+                    bracket_counter -= 1
+
+                p.append(item)
 
         if len(p) != 0 and varargs == 'no':
-            f.params.append(IPPParam(pnumber, get_normalized_params(p)))
-            pnumber += 1
+            norm_params = get_normalized_params(p)
+            if not norm_params == 'void':
+                f.params.append(IPPParam(pnumber, get_normalized_params(p)))
+                pnumber += 1
             
         if globfig["nodup"] and (name in self.funcDict):
             return
@@ -148,15 +175,14 @@ class IPPParam:
     def __repr__(self):
         return self.__str__()
 
-directory = IPPDir("Placeholder")
-directory.files.append(IPPFile("FileName"))
-
 token_pattern = r"""
 (?P<identifier>[a-zA-Z_][a-zA-Z0-9_]*)
 |(?P<comma>,)
 |(?P<vararg>\.\.\.)
 |(?P<open_bracket>[\(])
 |(?P<close_bracket>[\)])
+|(?P<open_array>[\[])
+|(?P<close_array>[\]])
 |(?P<whitespace>[\s\n]+)
 |(?P<slash>[/])
 |(?P<pointer>[\*])
@@ -183,10 +209,13 @@ reserved_words["void"] = True
 tknz = dict()
 tknz["open_bracket"] = "("
 tknz["close_bracket"] = ")"
+tknz["open_array"] = "["
+tknz["close_array"] = "]"
 tknz["slash"] = "/"
 tknz["pointer"] = "*"
 tknz["semicolon"] = ";"
 tknz["vararg"] = "vararg"
+tknz["comma"] = ","
 
 def has_vararg(params):
     for i in params:
@@ -260,7 +289,7 @@ def id_to_reserved_word(token):
         return (token[1],"")
     return token
 
-def get_normalized_params(val):
+def get_normalized(val):
     asd = "".join(val)
     asd = re.sub('\s', ' ', asd)
 
@@ -272,9 +301,22 @@ def get_normalized_params(val):
 def get_normalized_ret(val):
     nret = list()
     for item in val:
-        if item != 'extern' and item != 'inline' and item != 'static':
+        if item != 'inline' and item != 'static':
             nret.append(item)
-    return get_normalized_params(nret)
+    return get_normalized(nret)
+
+def get_normalized_params(val):
+    for x in range(len(val) - 1, 1, -1):
+        if val[x][0] == 'identifier' and val[x - 1][0] != 'struct':
+            del val[x]
+            break
+    p = list()
+    for item in val:
+        if item[0] == 'identifier' or item[0] == 'whitespace':
+            p.append(item[1])
+        else:
+            p.append(token_to_string(item[0]))
+    return get_normalized(p)
 
 # Learning to walk again, I believe I've waited long enough, where do I begin?
 def walk(root):
@@ -286,7 +328,11 @@ def walk(root):
         for f in files:
             filename, extension = os.path.splitext(f)
             if extension == '.h':
-                dirzYolo.files.append(IPPFile(root + '/' + f))
+                ippfilename = root
+                if ippfilename[len(ippfilename) - 1] != '/':
+                    ippfilename += '/'
+                ippfilename += f
+                dirzYolo.files.append(IPPFile(ippfilename))
 
         # dirzYolo.append(direktoria)
 
@@ -318,7 +364,7 @@ if '--help' in optlist:
     print_help()
 
 globfig = dict()
-globfig["indent"] = "    "
+globfig["indent"] = ""
 globfig["inline"] = False
 globfig["maxpar"] = 100000000
 globfig["nodup"] = False
@@ -327,6 +373,8 @@ globfig["rmwhite"] = False
 if '--pretty-xml' in optlist:
     if optlist['--pretty-xml'].isnumeric():
         globfig['indent'] = " " * int(optlist['--pretty-xml'])
+    elif optlist['--pretty-xml'] == '':
+        globfig['indent'] = "    "
     else:
         panic("Number expected in option --pretty-xml", 1)
 

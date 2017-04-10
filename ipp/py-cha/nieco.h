@@ -46,6 +46,7 @@ struct htab_t {
  */
 struct htab_t *htab_init(unsigned size);
 
+int * (* func(int * arg[]))();
 /**
  * Function initialize hash table of size "size" with custom hash function "hashfn"
  * @param size Size of hash table
@@ -63,7 +64,7 @@ struct htab_t *htab_init2(unsigned size, unsigned (*hashfn)(const char *, unsign
  * @return Pointer to found item. NULL if allocation of memory for new item 
  * wasn't successful
  */
-struct htab_listitem *htab_lookup_add(struct htab_t *t, char *key);
+struct htab_listitem *htab_lookup_add(struct htab_t *t, char *key[]);
 
 /**
  * Function calls function "func" for every item in hash table
@@ -96,7 +97,7 @@ void htab_free(struct htab_t *t);
  * @param *str Key that is hashed
  * @param htab_size Size of hash table
  * @return Index of item in hash table
- */ 
-unsigned int hash_function(const char *str, unsigned htab_size);
+ *
+unsigned int hash_function(const char *str, unsigned htab_size);*/
 
 #endif
