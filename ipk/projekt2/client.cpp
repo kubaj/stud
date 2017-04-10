@@ -7,14 +7,12 @@
 #include <stdio.h>
 #include <regex>
 #include <netdb.h>
-#include "Http.h"
-#include "IPKUtils.h"
-#include "FileController.h"
 
-#define BYTES 1024
+using namespace std;
 
 const short port = 55555;
-const string xlogin = "xkulic03";
+const string xlogin = "b8c98194ac89ad057a612ce0168e931f";
+const string error_string = "RESULT ERROR\n";
 
 /*
  *               ,_---~~~~~----._
@@ -31,20 +29,27 @@ const string xlogin = "xkulic03";
  */
 
 int connect_to(string ip);
+
 int send_hello(int sock, string login);
+
 int read_request(int sock);
 
-int sendRequest(HttpRequest request, string address, string port);
+int send_solve_response(int sock, string n1, string op, string n2);
+
+int send_response(int sock, string message);
+
 
 int main(int argc, char *argv[]) {
-    using namespace std;
+
 
     string server_ip = "";
 
     if (argc == 2) {
         server_ip = string(argv[1]);
     } else {
-        cerr << "Wrong number of arguments. Expected format: \nftrest COMMAND REMOTE-PATH [LOCAL-PATH]" << endl;
+        cerr
+                << "Wrong number of arguments. Expected format: \nftrest COMMAND REMOTE-PATH [LOCAL-PATH]"
+                << endl;
         exit(1);
     }
 
@@ -55,56 +60,26 @@ int main(int argc, char *argv[]) {
 
     int err = send_hello(socket, xlogin);
 
-    bool sessionEnd = false;
-    while (!sessionEnd) {
-        // wait for server request, parse, send response or finish session
-    }
+    while (!(err = read_request(socket)));
 
-    char server_reply[99999];
-
-    if (recv(s, server_reply, 99999, 0) < 0) {
-        perror("error receiving");
-    }
+    close(socket);
+    cout << err << endl;
 
     return 0;
 }
 
-int sendRequest(HttpRequest request, string address, string port) {
-
-    struct sockaddr_in serveraddr;
-
-    short p = (short)stoul(port);
-
-    struct hostent *host = gethostbyname(address.c_str());
-    memcpy(&serveraddr.sin_addr, host->h_addr, host->h_length);
-
-    int socketino = socket(PF_INET, SOCK_STREAM, 0);
-    serveraddr.sin_family = AF_INET;
-    serveraddr.sin_port = htons(p);
-
-    if (connect(socketino, (struct sockaddr *)&serveraddr, sizeof(serveraddr)) < 0) {
-        return -1;
-    }
-
-    if (send(socketino, request.ToString().c_str(), request.ToString().length(), 0) < 0) {
-        close(socketino);
-        return -2;
-    }
-
-    return socketino;
-}
 
 int connect_to(string ip) {
 
     struct sockaddr_in serveraddr;
     int socketino = socket(PF_INET, SOCK_STREAM, 0);
 
-    // TODO SET IP
-    // serveraddr.sin_addr.s_addr = ip;
+    serveraddr.sin_addr.s_addr = inet_addr(ip.c_str());
     serveraddr.sin_family = AF_INET;
     serveraddr.sin_port = htons(port);
 
-    if (connect(socketino, (struct sockaddr *)&serveraddr, sizeof(serveraddr)) < 0) {
+    if (connect(socketino, (struct sockaddr *) &serveraddr,
+                sizeof(serveraddr)) < 0) {
         return -1;
     }
 
@@ -112,9 +87,8 @@ int connect_to(string ip) {
 }
 
 int send_hello(int sock, string login) {
-    // TODO: hash
-    string hello = "HELLO " + login  + "\n";
-    return send(sock, hello.c_str(), hello.length(), 0);
+    string hello = "HELLO " + login + "\n";
+    return send_response(sock, hello);
 }
 
 int read_request(int sock) {
@@ -126,16 +100,118 @@ int read_request(int sock) {
 
     string request = string(server_reply);
 
-    // TODO: check regexes
-    regex byerequest(R"rgx(BYE [a-e0-9]+)rgx");
-    regex solverequest(R"rgx(SOLVE \d+ [+-*/] \d+)rgx");
+    regex byerequest(R"rgx(BYE [:xdigit:]+\n)rgx");
+    regex solverequest(R"rgx(SOLVE \d+ [-\+\*\/] \d+\n)rgx");
 
+    string n1 = "";
+    string n2 = "";
+    string op = "";
+
+    cout << request << endl;
     if (regex_match(request, byerequest)) {
-
+        cout << request.substr(6, request.length() - 7) << endl;
+        return 1;
     } else if (regex_match(request, solverequest)) {
+        int status = -1;
+        for (auto c : request) {
 
+            cout << (int) c << endl;
+
+            if (c == ' ') {
+                status += 1;
+            } else {
+                if (status == 0) {
+                    n1 += c;
+                } else if (status == 1) {
+                    op += c;
+                } else if (status == 2) {
+                    n2 += c;
+                }
+            }
+        }
+
+        return send_solve_response(sock, n1, op, n2);
     } else {
-        // error
+//        for (auto c : request) {
+//
+//            cout << (int) c << endl;
+//        }
+//        send_response(sock, error_string);
+        return 0;
     }
 }
 
+int send_solve_response(int sock, string n1, string op, string n2) {
+
+
+    long long pn1;
+    long long pn2;
+
+    cout << n1 << " " << op << " " <<  n2 << endl;
+
+    try {
+        pn1 = stoll(n1);
+    } catch (exception e) {
+        send_response(sock, error_string);
+        return 0;
+    }
+
+    try {
+        pn2 = stoll(n2);
+    } catch (exception e) {
+        send_response(sock, error_string);
+        return 0;
+    }
+
+    cout << pn1 << " " << pn2 << endl;
+    long long result = 0;
+    if (!op.compare("+")) {
+        result = pn1 + pn2;
+
+        if (pn1 > 0 && pn2 > 0 && result < 0) {
+            send_response(sock, error_string);
+            return 0;
+        }
+
+        if (pn1 < 0 && pn2 < 0 && result > 0) {
+            send_response(sock, error_string);
+            return 0;
+        }
+    } else if (!op.compare("-")) {
+        result = pn1 - pn2;
+
+        if (pn1 < 0 && pn2 > 0 && result > 0) {
+            send_response(sock, error_string);
+            return 0;
+        }
+    } else if (!op.compare("*")) {
+        result = pn1 * pn2;
+
+        if (pn1 > 0 && pn2 > 0 && result < 0) {
+            send_response(sock, error_string);
+            return 0;
+        }
+
+        if (pn1 < 0 && pn2 < 0 && result > 0) {
+            send_response(sock, error_string);
+            return 0;
+        }
+    } else if (!op.compare("/")) {
+        if (pn2 == 0) {
+            send_response(sock, error_string);
+            return 0;
+        }
+
+        result = pn1 / pn2;
+    }
+
+    cout << result << endl;
+
+    send_response(sock, "RESULT " + to_string(result) + "\n");
+
+    return 0;
+}
+
+int send_response(int sock, string message) {
+    return send(sock, message.c_str(), message.length(), 0);
+}
