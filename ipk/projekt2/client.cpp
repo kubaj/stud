@@ -7,6 +7,7 @@
 #include <stdio.h>
 #include <regex>
 #include <netdb.h>
+#include <iomanip>
 
 using namespace std;
 
@@ -164,7 +165,8 @@ int send_solve_response(int sock, string n1, string op, string n2) {
     }
 
     cout << pn1 << " " << pn2 << endl;
-    long long result = 0;
+    double result = 0;
+
     if (!op.compare("+")) {
         result = pn1 + pn2;
 
@@ -205,13 +207,16 @@ int send_solve_response(int sock, string n1, string op, string n2) {
         result = pn1 / pn2;
     }
 
-    cout << result << endl;
+    stringstream stream;
+    stream << fixed << setprecision(2) << result;
+    string result_string = stream.str();
 
-    send_response(sock, "RESULT " + to_string(result) + "\n");
+    send_response(sock, "RESULT " + result_string + "\n");
 
     return 0;
 }
 
 int send_response(int sock, string message) {
+    cout << message << endl;
     return send(sock, message.c_str(), message.length(), 0);
 }

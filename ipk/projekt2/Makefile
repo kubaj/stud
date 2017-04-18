@@ -1,9 +1,9 @@
 CC = g++
 
 # define any compile-time flags
-CFLAGS = -Wall -g -pthread -std=c++11
+CFLAGS = -Wall -g -std=c++11
 
-LIBS = -pthread
+LIBS =
 
 # define the C source files
 CSRC = client.cpp
