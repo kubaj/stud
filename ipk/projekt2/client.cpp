@@ -1,18 +1,19 @@
 #include <cstdlib>
 #include <sys/socket.h>
+#include <sys/types.h>
+#include <netdb.h>
 #include <arpa/inet.h>
 #include <unistd.h>
 #include <string>
 #include <iostream>
-#include <stdio.h>
 #include <regex>
-#include <netdb.h>
 #include <iomanip>
+#include <cmath>
+#include "md5.h"
 
 using namespace std;
 
-const short port = 55555;
-const string xlogin = "b8c98194ac89ad057a612ce0168e931f";
+const string port = "55555";
 const string error_string = "RESULT ERROR\n";
 
 /*
@@ -49,22 +50,30 @@ int main(int argc, char *argv[]) {
         server_ip = string(argv[1]);
     } else {
         cerr
-                << "Wrong number of arguments. Expected format: \nftrest COMMAND REMOTE-PATH [LOCAL-PATH]"
+                << "Wrong number of arguments. Expected format: \nipk-client IP-ADDRESS"
                 << endl;
         exit(1);
     }
 
     int socket = connect_to(server_ip);
     if (socket < 0) {
-        // TODO exit
+        cerr << "* Sad trumpet sound *" << endl << "Cannot connect to the server." << endl;
+        exit(1);
     }
 
-    int err = send_hello(socket, xlogin);
+    string xlogin = md5("xkulic03");
+    send_hello(socket, xlogin);
+
+    int err;
 
     while (!(err = read_request(socket)));
 
     close(socket);
-    cout << err << endl;
+
+    if (err < 0) {
+        cerr << "error happened" << endl;
+        exit(1);
+    }
 
     return 0;
 }
@@ -72,19 +81,30 @@ int main(int argc, char *argv[]) {
 
 int connect_to(string ip) {
 
-    struct sockaddr_in serveraddr;
-    int socketino = socket(PF_INET, SOCK_STREAM, 0);
+    int status;
+    struct addrinfo hints;
+    struct addrinfo *res;
 
-    serveraddr.sin_addr.s_addr = inet_addr(ip.c_str());
-    serveraddr.sin_family = AF_INET;
-    serveraddr.sin_port = htons(port);
+    memset(&hints, 0, sizeof hints);
+    hints.ai_family = AF_UNSPEC;
+    hints.ai_socktype = SOCK_STREAM;
 
-    if (connect(socketino, (struct sockaddr *) &serveraddr,
-                sizeof(serveraddr)) < 0) {
+    if ((status = getaddrinfo(ip.c_str(), port.c_str(), &hints, &res)) != 0) {
         return -1;
     }
 
-    return socketino;
+    int clientSocket = socket(res->ai_family, SOCK_STREAM, 0);
+    if (clientSocket < 0)
+    {
+        return -1;
+    }
+
+    if (connect(clientSocket, res->ai_addr, res->ai_addrlen) < 0)
+    {
+        return -1;
+    }
+
+    return clientSocket;
 }
 
 int send_hello(int sock, string login) {
@@ -101,22 +121,25 @@ int read_request(int sock) {
 
     string request = string(server_reply);
 
-    regex byerequest(R"rgx(BYE [:xdigit:]+\n)rgx");
-    regex solverequest(R"rgx(SOLVE \d+ [-\+\*\/] \d+\n)rgx");
-
     string n1 = "";
     string n2 = "";
     string op = "";
 
-    cout << request << endl;
-    if (regex_match(request, byerequest)) {
-        cout << request.substr(6, request.length() - 7) << endl;
+    if (!request.substr(0, 3).compare("BYE")) {
+      string forprint = "";
+        for (auto c : request.substr(4)) {
+          if (c == '\n')
+          {
+            break;
+          }
+          forprint += c; 
+        }
+
+        cout << forprint;
         return 1;
-    } else if (regex_match(request, solverequest)) {
+    } else if (!request.substr(0, 5).compare("SOLVE")) {
         int status = -1;
         for (auto c : request) {
-
-            cout << (int) c << endl;
 
             if (c == ' ') {
                 status += 1;
@@ -133,11 +156,6 @@ int read_request(int sock) {
 
         return send_solve_response(sock, n1, op, n2);
     } else {
-//        for (auto c : request) {
-//
-//            cout << (int) c << endl;
-//        }
-//        send_response(sock, error_string);
         return 0;
     }
 }
@@ -147,8 +165,6 @@ int send_solve_response(int sock, string n1, string op, string n2) {
 
     long long pn1;
     long long pn2;
-
-    cout << n1 << " " << op << " " <<  n2 << endl;
 
     try {
         pn1 = stoll(n1);
@@ -164,7 +180,6 @@ int send_solve_response(int sock, string n1, string op, string n2) {
         return 0;
     }
 
-    cout << pn1 << " " << pn2 << endl;
     double result = 0;
 
     if (!op.compare("+")) {
@@ -204,11 +219,11 @@ int send_solve_response(int sock, string n1, string op, string n2) {
             return 0;
         }
 
-        result = pn1 / pn2;
+        result = (double) pn1 / pn2;
     }
 
     stringstream stream;
-    stream << fixed << setprecision(2) << result;
+    stream << fixed << setprecision(2) << floor(result * 100) / 100;
     string result_string = stream.str();
 
     send_response(sock, "RESULT " + result_string + "\n");
@@ -217,6 +232,5 @@ int send_solve_response(int sock, string n1, string op, string n2) {
 }
 
 int send_response(int sock, string message) {
-    cout << message << endl;
     return send(sock, message.c_str(), message.length(), 0);
 }

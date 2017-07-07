@@ -6,7 +6,7 @@ CFLAGS = -Wall -g -std=c++11
 LIBS =
 
 # define the C source files
-CSRC = client.cpp
+CSRC = client.cpp md5.cpp
 
 # define the C object files
 #
