@@ -1,0 +1,12 @@
+opencart:
+  image: vimagick/opencart
+  ports:
+    - "8000:80"
+  links:
+    - mysql
+
+mysql:
+  image: mysql
+  environment:
+    - MYSQL_ROOT_PASSWORD=root
+    - MYSQL_DATABASE=opencart

@@ -1,0 +1,2 @@
+PHP Warning:  fopen(./read_only/testB05.out): failed to open stream: No such file or directory in /home/jakub/fit/ipp/php-xtd/xtd.php on line 21
+Output file error

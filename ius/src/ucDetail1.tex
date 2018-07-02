@@ -1,0 +1,48 @@
+\begin{center}
+\begin{tabularx}{\textwidth}{| X |}
+  \hline
+  \textbf{Identifikátor:} UC01\\
+  \hline
+  \textbf{Názov:} Vytvoriť pobyt\\
+  \hline
+  \textbf{Popis:} Recepčná hotela \textbf{R} vytvorí klientovi \textbf{K} pobyt. \\
+  \hline
+  \textbf{Priorita:} 1 \\
+  \hline
+  \textbf{Frekvencia} Niekoľkokrát týždenne \\
+  \hline
+  \textbf{Vstupné podmienky:} \\
+  \begin{compactenum}
+  	\item Recepčná \textbf{R} je prihlásená do systému.
+  \end{compactenum}\\
+  \hline
+  \textbf{Výstupné podmienky} \textbf{K} je ubytovaný v hoteli \\
+  \hline
+  \textbf{Užívatelia:} Recepčná hotela \textbf{R}\\ %,Klient \textbf{K},  Vedúci hotela \textbf{V} \\
+  \hline
+  \textbf{Základná postupnosť:} \\
+  \begin{compactenum}
+    \item Prípad užitia začína tým, že \textbf{R} vyhľadá v systéme podľa prípadu užitia \textbf{UC04}, či nemá \textbf{K} vytvorenú rezerváciu:
+      \begin{compactenum}
+      \item ak má, tak \textbf{R} overí či sú údaje o \textbf{K} v systéme správne. ak nie, môže ich opraviť a stav pobytu zmení z \uv{rezervácia} na \uv{pobyt}. 
+        Prípad užitia pokračuje posledným krokom.
+      \item ak nemá, tak prípad užitia pokračuje následujucim krokom.
+      \end{compactenum}
+    \item \textbf{R} vyhľadá v systéme podľa prípadu užitia \textbf{UC05} voľné izby na základe dátumu a počtu lôžok, ktoré požaduje \textbf{K}.
+      \begin{compactenum}
+      \item ak systém nenájde izby vyhovujúce požiadavkám, tak \textbf{R} dá možnosť \textbf{K} zmeniť požiadavky a vyhľadanie sa zopakuje.
+      \item ak systém nájde izby vyhovujúce požiadavkám, tak prípad užitia pokračuje nasledujúcim krokom. 
+      \end{compactenum}
+    \item Systém zobrazí vyhľadané voľné izby vyhovujúce požiadavkám a zobrazí cenu jednotlivých izieb a celkovú cenu za pobyt.
+    \item ak \textbf{K} s cenou a s ubytovaním súhlasí, tak \textbf{R} zadá do systému osobné údaje o \textbf{K} a potvrdí vytvorenie pobytu.
+    \item \textbf{R} vykoná úkony spojené s odovzdaním izby.
+  \end{compactenum}\\
+  \hline
+  \textbf{Alternatívna postupnosť:} \\
+  \begin{compactenum}
+    \item[1.-4.] \textbf{R} môže ukončiť proces vytvorenia pobytu.
+  \end{compactenum}\\
+  \hline
+
+\end{tabularx}
+\end{center}
